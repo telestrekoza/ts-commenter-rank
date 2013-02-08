@@ -14,22 +14,26 @@ Author URI: http://myeburg.net/
 */
 
 namespace ts\plugins;
-
-function user_awards() {
-	global $wpdb, $bp;
-	$userId = $bp->displayed_user->id;
-	$where = 'WHERE comment_approved = 1 AND user_id = '. $userId .' ';
+class CommenterRank {
+public static function ts_user_awards($comment) {
+    if($comment->user_id < 1)
+	return;
+    global $wpdb;
+    if (!function_exists('fcc_get_comment_count')) {
+	$where = 'WHERE comment_approved = 1 AND user_id = '.$comment->user_id.' ';
 	$count = $wpdb->get_results("SELECT COUNT( * ) AS total
 		FROM {$wpdb->comments}
 		{$where}", object);
 	$count = $count[0]->total;
-	//echo $userId."-".$bp->displayed_user->fullname.":".$count;
 	//echo '<!-- comment '.$comment->user_id.' count : '.$count.' -->';
 	//return;
-	if ($count < 10 )
-		return;
-	?>
- <span class="awards-label">Награды:</span><div class="awards">
+    } else {
+	$count = fcc_get_comment_count($comment);
+    }
+    if ($count < 10 )
+	return;
+?>
+ <div class="awards">
  <?php
  if ($comment->user_id == 1 && date("dm") == "2810") { ?>
     <img align="absbottom" title="Поздравляем с днем рождения" alt="с ДР" src="/static/images/awards/birthday.png" width="15" height="16"/>
@@ -61,9 +65,7 @@ function user_awards() {
  else  {?>
      <img align="absbottom" title="Начинающий комментатор" alt="Начинающий комментатор" src="/static/images/awards/award-start.png" height="16"/>
      <?php }
-?> </div>
-<?php
+?> </div> <?php
 }
-
-
+}
 ?>
